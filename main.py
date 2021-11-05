@@ -4,6 +4,7 @@ import tkinter
 import os, shutil, sys, traceback
 
 warband_fx = True
+leave_comments = False #Only for /* */ comments.
 
 directories = dict() #You can modify directories values.
 directories["original dir"] = "./_Original"
@@ -15,35 +16,35 @@ class Beautifier():
         self.file = file
         with open(self.file, "r") as f:
             self.text = f.read()
-        to_space = ["\t", "\\\n"] #Replace to space
+        to_space = ["\t", "\\\n"] #Replace to space.
         for char in to_space:
             self.text = self.text.replace(char, " ")
-        self.text = "\n".join([line.split("//")[0].strip(" ") for line in self.text.split("\n")]) #Remove // comments and strip
-        result = "" #Remove /* */ comments
-        i = 0
-        commented_out = False
-        while i < len(self.text):
-            char = self.text[i]
-            double_chars = ["/*", "*/"]
-            for first, last in double_chars:
-                if char == first and i + 1 < len(self.text) and self.text[i + 1] == last:
-                    char = first + last
-                    i += 1
-            if char in ["/*"]:
-                commented_out = True
-            if not commented_out:
-                result += char
-            if char in ["*/"]:
-                commented_out = False
-            i += 1
-        self.text = result
-        processes = { #Transfer to raw, 1 line format
+        self.text = "\n".join([line.split("//")[0].strip(" ") for line in self.text.split("\n")]) #Remove // comments and strip.
+        if not leave_comments: #Remove /* */ comments.
+            result = ""
+            i = 0
+            commented_out = False
+            while i < len(self.text):
+                char = self.text[i]
+                double_chars = ["/*", "*/"]
+                for first, last in double_chars:
+                    if char == first and i + 1 < len(self.text) and self.text[i + 1] == last:
+                        char = first + last
+                        i += 1
+                if char in ["/*"]:
+                    commented_out = True
+                if not commented_out:
+                    result += char
+                if char in ["*/"]:
+                    commented_out = False
+                i += 1
+            self.text = result
+        processes = { #Transfer to raw, 1 line format.
             "normal" : self.raw_normal,
             "macro" : self.raw_macro
         }
         processed_lines = []
         lines = self.text.split("\n")
-        self.macro = False
         for line in lines:
             if line: processed_lines.append(processes["macro" if line[0] == "#" else "normal"](line))
         self.text = "".join(processed_lines)
@@ -59,8 +60,11 @@ class Beautifier():
         lines = self.text.split("\n")
         processed_lines = []
         self.indent = 0
+        self.macro = False
+        self.commented_out = False
+        self.new_line_after_comment = False
         for line in lines:
-            processed_lines.append(processes["macro" if line[0] == "#" else "normal"](line))
+            processed_lines.append(processes["macro" if not self.commented_out and line[0] == "#" else "normal"](line))
         self.text = "".join(processed_lines)[:-1]#
     
     def write(self, name, extension):
@@ -137,7 +141,7 @@ class Beautifier():
             if char in ["<", ">", "+", "-", "&", "|", ":"] and i + 1 < len(line) and line[i + 1] == char:
                 char = char * 2
                 i += 1
-            double_chars = ["};"]
+            double_chars = ["};", "/*", "*/"]
             for first, last in double_chars:
                 if char == first and i + 1 < len(line) and line[i + 1] == last:
                     char = first + last
@@ -146,7 +150,14 @@ class Beautifier():
                 define_ = True
             if i + 3 < len(line) and line[i : i + 4] == "for(":
                 for_loop = True
-            if char in ["=", "!", "<", ">", "+", "-", "*", "/", "%", "&", "^", "|", "<<", ">>"] and i + 1 < len(line) and line[i + 1] == "=":
+            if char in ["*/"]:
+                self.commented_out = False
+                if self.new_line_after_comment:
+                    self.new_line_after_comment = False
+                    newline = True
+            if self.commented_out:
+                result += char
+            elif char in ["=", "!", "<", ">", "+", "-", "*", "/", "%", "&", "^", "|", "<<", ">>"] and i + 1 < len(line) and line[i + 1] == "=":
                 char = char + "="
                 i += 1
                 result += " " + char + " "
@@ -178,6 +189,11 @@ class Beautifier():
                 newline = True
             elif char in [")"] and for_loop:
                 for_loop = False
+                result += char
+            elif char in ["/*"]:
+                self.commented_out = True
+                if (not result) or result[-1] == "\t":
+                    self.new_line_after_comment = True
                 result += char
             else:
                 result += char
