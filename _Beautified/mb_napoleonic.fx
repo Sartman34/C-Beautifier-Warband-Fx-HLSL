@@ -32,8 +32,16 @@
 #define VERTEX_LIGHTING_SCALER 1.0h
 #define VERTEX_LIGHTING_SPECULAR_SCALER 1.0h
 #define USE_PRECOMPILED_SHADER_LISTS 
-#define GIVE_ERROR_HERE {for(int i=0;i<1000;i++){Output.RGBColor*=Output.RGBColor;}}
-#define GIVE_ERROR_HERE_VS {for(int i=0;i<1000;i++){Out.Pos*=Out.Pos;}}
+#define GIVE_ERROR_HERE {\
+	for(int i = 0; i < 1000; i++){\
+		Output.RGBColor *= Output.RGBColor;\
+	}\
+}
+#define GIVE_ERROR_HERE_VS {\
+	for(int i = 0; i < 1000; i++){\
+		Out.Pos *= Out.Pos;\
+	}\
+}
 #ifdef NO_GAMMA_CORRECTIONS
 	#define INPUT_TEX_GAMMA(col_rgb) (col_rgb) = (col_rgb)
 	#define INPUT_OUTPUT_GAMMA(col_rgb) (col_rgb) = (col_rgb)
@@ -158,9 +166,9 @@
 		static const float fShadowBias = 0.00002f;
 		#ifdef USE_NEW_TREE_SYSTEM
 			float flora_detail = 40.0f;
-			#define flora_detail_fade (flora_detail*FLORA_DETAIL_FADE_MUL)
-			#define flora_detail_fade_inv (flora_detail-flora_detail_fade)
-			#define flora_detail_clip (max(0,flora_detail_fade-20.0f))
+			#define flora_detail_fade (flora_detail * FLORA_DETAIL_FADE_MUL)
+			#define flora_detail_fade_inv (flora_detail - flora_detail_fade)
+			#define flora_detail_clip (max(0, flora_detail_fade - 20.0f))
 		#endif
 		float4 debug_vector = {
 			0, 0, 0, 1
@@ -467,9 +475,7 @@
 	}
 	half4 calculate_point_lights_diffuse(const float3 vWorldPos, const half3 vWorldN, const bool face_like_NdotL){
 		half4 total = 0;
-		[loop]for(int j = 0;
-		j < iLightPointCount;
-		j++){
+		[loop]for(int j = 0; j < iLightPointCount; j++){
 			int i = iLightIndices[j];
 			half3 point_to_light = vLightPosDir[i] - vWorldPos;
 			half LD = dot(point_to_light, point_to_light);
@@ -486,9 +492,7 @@
 	}
 	half3 calculate_point_lights_diffuse_ex_1(const float3 vWorldPos, const half3 vWorldN, const bool face_like_NdotL){
 		half3 total = 0;
-		[loop]for(int j = 0;
-		j < iLightPointCount;
-		j++){
+		[loop]for(int j = 0; j < iLightPointCount; j++){
 			int i = iLightIndices[j];
 			half3 point_to_light = vLightPosDir[i] - vWorldPos;
 			half LD = dot(point_to_light, point_to_light);
@@ -659,9 +663,7 @@
 			};
 			float light_len = length(point_to_light);
 			static const float sample_radius = 0.314f;
-			for(int i = 0;
-			i < 6;
-			i++){
+			for(int i = 0; i < 6; i++){
 				float3 tc = point_to_light + samples[i] * sample_radius;
 				float shadow_len = texCUBE(CubicTextureSampler, tc).x;
 				total_shadow += float(light_len < shadow_len);
@@ -674,9 +676,7 @@
 			};
 			float light_len = length(point_to_light);
 			static const float sample_radius = 0.314f;
-			for(int i = 0;
-			i < 4;
-			i++){
+			for(int i = 0; i < 4; i++){
 				float3 tc = point_to_light + samples[i] * sample_radius;
 				float shadow_len = texCUBE(CubicTextureSampler, tc).x;
 				total_shadow += float(light_len < shadow_len);
@@ -753,9 +753,7 @@
 		#endif
 		Output.RGBColor.rgb = 0.0h;
 		Output.RGBColor.a = 1.0h;
-		for(int il = 0;
-		il < light_count;
-		il++){
+		for(int il = 0; il < light_count; il++){
 			if(g_vPointLightPosXYZ_InvRadius[il].a == 0.0f)break;
 			float3 point_to_light = g_vPointLightPosXYZ_InvRadius[il].a * (g_vPointLightPosXYZ_InvRadius[il].xyz - world_pos);
 			#ifdef USE_WORLD_SPACE_LIGHTING
@@ -1173,9 +1171,7 @@
 		blur_amount *= blur_amount;
 		float sampleDist = (6.0f / 256.0f) * blur_amount;
 		float sample = sample_start;
-		for(int i = 0;
-		i < SAMPLE_COUNT;
-		i++){
+		for(int i = 0; i < SAMPLE_COUNT; i++){
 			float2 sample_pos = texCoord + sampleDist * offsets[i];
 			float sample_here = tex2D(CharacterShadowTextureSampler, sample_pos).a;
 			sample += sample_here;
@@ -2194,9 +2190,7 @@
 				float4 Position1;
 				float4 Position2;
 				float4 nextPos = orgPos;
-				for(int p = 1;
-				p < 3;
-				p++){
+				for(int p = 1; p < 3; p++){
 					if(p == 2){
 						nextPos.x = orgPos.x;
 						nextPos.y -= 0.05f;
@@ -2334,9 +2328,7 @@
 				float4 Position1;
 				float4 Position2;
 				float4 nextPos = orgPos;
-				for(int p = 1;
-				p < 3;
-				p++){
+				for(int p = 1; p < 3; p++){
 					if(p == 2){
 						nextPos.x = orgPos.x;
 						nextPos.y -= .05;
@@ -2481,9 +2473,7 @@
 			if(parallaxmapping_type == 2){
 				const int ITERS = 3;
 				float3 uvh = float3(In.Tex0.xy, 0.0f);
-				for(int i = 0;
-				i < ITERS;
-				i++){
+				for(int i = 0; i < ITERS; i++){
 					float4 Normal = tex2D(NormalTextureSampler, uvh.xy);
 					float h = Normal.a * SCALE + BIAS;
 					uvh += (h - uvh.z) * Normal.z * View;
@@ -4754,7 +4744,7 @@
 	float4x4 cloth_world_mat;
 	float timestep = 0.01f;
 	#define CLOTH_SPACE_SCALE (1.0f)
-	#define CLOTH_SPACE_SCALE_INV (1.0f/CLOTH_SPACE_SCALE)
+	#define CLOTH_SPACE_SCALE_INV (1.0f / CLOTH_SPACE_SCALE)
 	bool is_static(float2 uv){
 		return uv.y < cloth_size.z;
 		return(uv.y < cloth_size.z) && ((uv.x > (1.0f - (cloth_size.z * 5))) || (uv.x < (cloth_size.z * 5)) || ((uv.x > 0.4) && (uv.x < 0.6)));
@@ -4903,9 +4893,7 @@
 		else return 0;
 	}
 	void do_collisions(inout float3 pos){
-		for(int i_e = 0;
-		i_e < num_ellipsoid;
-		i_e++){
+		for(int i_e = 0; i_e < num_ellipsoid; i_e++){
 			pos += ellipsoid_constraint(pos, collision_ellipsoid_matrices[i_e], collision_ellipsoid_inv_matrices[i_e]);
 		}
 		plane_constraint(pos, collision_plane.xyz, collision_plane.w);
@@ -5128,9 +5116,7 @@
 		};
 		float sampleDist = cloth_size.z * 1.74f;
 		float3 sample = sample_start;
-		for(int i = 0;
-		i < SAMPLE_COUNT;
-		i++){
+		for(int i = 0; i < SAMPLE_COUNT; i++){
 			float2 sample_pos = texCoord + sampleDist * offsets[i];
 			float3 sample_here;
 			sample_here = tex2D(PositionSampler, sample_pos).rgb;

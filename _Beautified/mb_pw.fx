@@ -33,8 +33,16 @@
 #define VERTEX_LIGHTING_SCALER 1.0f
 #define VERTEX_LIGHTING_SPECULAR_SCALER 1.0f
 #define USE_PRECOMPILED_SHADER_LISTS 
-#define GIVE_ERROR_HERE {for(int i=0;i<1000;i++){Output.RGBColor*=Output.RGBColor;}}
-#define GIVE_ERROR_HERE_VS {for(int i=0;i<1000;i++){Out.Pos*=Out.Pos;}}
+#define GIVE_ERROR_HERE {\
+	for(int i = 0; i < 1000; i++){\
+		Output.RGBColor *= Output.RGBColor;\
+	}\
+}
+#define GIVE_ERROR_HERE_VS {\
+	for(int i = 0; i < 1000; i++){\
+		Out.Pos *= Out.Pos;\
+	}\
+}
 #ifdef NO_GAMMA_CORRECTIONS
 	#define INPUT_TEX_GAMMA(col_rgb) (col_rgb) = (col_rgb)
 	#define INPUT_OUTPUT_GAMMA(col_rgb) (col_rgb) = (col_rgb)
@@ -132,9 +140,9 @@
 	static const float fShadowBias = 0.00002f;
 	#ifdef USE_NEW_TREE_SYSTEM
 		float flora_detail = 40.0f;
-		#define flora_detail_fade (flora_detail*FLORA_DETAIL_FADE_MUL)
-		#define flora_detail_fade_inv (flora_detail-flora_detail_fade)
-		#define flora_detail_clip (max(0,flora_detail_fade-20.0f))
+		#define flora_detail_fade (flora_detail * FLORA_DETAIL_FADE_MUL)
+		#define flora_detail_fade_inv (flora_detail - flora_detail_fade)
+		#define flora_detail_clip (max(0, flora_detail_fade - 20.0f))
 	#endif
 #endif
 #if defined(USE_SHARED_DIFFUSE_MAP) || !defined(USE_DEVICE_TEXTURE_ASSIGN)
@@ -417,9 +425,7 @@
 	float4 calculate_point_lights_diffuse(const float3 vWorldPos, const float3 vWorldN, const bool face_like_NdotL, const bool exclude_0){
 		const int exclude_index = 0;
 		float4 total = 0;
-		for(int j = 0;
-		j < iLightPointCount;
-		j++){
+		for(int j = 0; j < iLightPointCount; j++){
 			if(!exclude_0 || j != exclude_index){
 				int i = iLightIndices[j];
 				float3 point_to_light = vLightPosDir[i] - vWorldPos;
@@ -439,9 +445,7 @@
 	}
 	float4 calculate_point_lights_specular(const float3 vWorldPos, const float3 vWorldN, const float3 vWorldView, const bool exclude_0){
 		float4 total = 0;
-		for(int i = 0;
-		i < iLightPointCount;
-		i++){
+		for(int i = 0; i < iLightPointCount; i++){
 			{
 				float3 point_to_light = vLightPosDir[i] - vWorldPos;
 				float LD = dot(point_to_light, point_to_light);
@@ -807,9 +811,7 @@
 		blur_amount *= blur_amount;
 		float sampleDist = (6.0f / 256.0f) * blur_amount;
 		float sample = sample_start;
-		for(int i = 0;
-		i < SAMPLE_COUNT;
-		i++){
+		for(int i = 0; i < SAMPLE_COUNT; i++){
 			float2 sample_pos = texCoord + sampleDist * offsets[i];
 			float sample_here = tex2D(CharacterShadowTextureSampler, sample_pos).a;
 			sample += sample_here;

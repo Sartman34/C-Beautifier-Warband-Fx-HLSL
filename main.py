@@ -128,6 +128,7 @@ class Beautifier():
         i = 0
         newline = False
         define_ = False
+        for_loop = False
         while i < len(line):
             if newline:
                 result += self.newline()
@@ -143,6 +144,8 @@ class Beautifier():
                     i += 1
             if warband_fx and i + 6 < len(line) and line[i : i + 7] == "DEFINE_": #For Warband .fx files only.
                 define_ = True
+            if i + 3 < len(line) and line[i : i + 4] == "for(":
+                for_loop = True
             if char in ["=", "!", "<", ">", "+", "-", "*", "/", "%", "&", "^", "|", "<<", ">>"] and i + 1 < len(line) and line[i + 1] == "=":
                 char = char + "="
                 i += 1
@@ -154,8 +157,9 @@ class Beautifier():
             elif char in [",", ":"]:
                 result += char + " "
             elif char in [";"]:
-                result += char
-                newline = True
+                result += char + (" " if for_loop else "")
+                if not for_loop:
+                    newline = True
             elif char in ["{"]:
                 self.indent += 1
                 result += char
@@ -172,6 +176,9 @@ class Beautifier():
                 define_ = False
                 result += char
                 newline = True
+            elif char in [")"] and for_loop:
+                for_loop = False
+                result += char
             else:
                 result += char
             i += 1
@@ -209,7 +216,7 @@ class Beautifier():
             else:
                 identifier = parameters[0]
                 token_string = " ".join(parameters[1:])
-                line = "#{} {} {}".format(operation, identifier, self.raw_normal(token_string))
+                line = "#{} {} {}".format(operation, identifier, self.beautify_normal(token_string))
         self.macro = False
         result = "\t" * self.indent + line + "\n"
         if operation in try_begin_ops + else_try_ops:

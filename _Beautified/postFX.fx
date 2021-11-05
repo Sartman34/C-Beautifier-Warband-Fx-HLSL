@@ -102,9 +102,9 @@ float g_DOF_Range = 5.19876;
 	#undef postfxParams2
 	#undef postfxParams3
 	#define postfxTonemapOp (int(postfx_editor_vector[0].x))
-	#define postfxParams1 float4(postfx_editor_vector[1].x,postfx_editor_vector[1].y,postfx_editor_vector[1].z,postfx_editor_vector[1].w)
-	#define postfxParams2 float4(postfx_editor_vector[2].x,postfx_editor_vector[2].y,postfx_editor_vector[2].z,postfx_editor_vector[2].w)
-	#define postfxParams3 float4(postfx_editor_vector[3].x,postfx_editor_vector[3].y,postfx_editor_vector[3].z,postfx_editor_vector[3].w)
+	#define postfxParams1 float4(postfx_editor_vector[1].x, postfx_editor_vector[1].y, postfx_editor_vector[1].z, postfx_editor_vector[1].w)
+	#define postfxParams2 float4(postfx_editor_vector[2].x, postfx_editor_vector[2].y, postfx_editor_vector[2].z, postfx_editor_vector[2].w)
+	#define postfxParams3 float4(postfx_editor_vector[3].x, postfx_editor_vector[3].y, postfx_editor_vector[3].z, postfx_editor_vector[3].w)
 	#define RELATIVE_PS_TARGET PS_2_X
 #else
 	#define RELATIVE_PS_TARGET ps_2_0
@@ -117,7 +117,7 @@ float g_DOF_Range = 5.19876;
 #define BrightpassPostPower (postfxParams2.y)
 #define BlurStrenght (postfxParams2.z)
 #define BlurAmount (postfxParams2.w)
-#define HDRRangeInv (1.0f/HDRRange)
+#define HDRRangeInv (1.0f / HDRRange)
 float CalculateWignette(float2 tc){
 	tc = tc - 0.5;
 	return pow(1 - dot(tc, tc), 4);
@@ -125,9 +125,7 @@ float CalculateWignette(float2 tc){
 float4 radial(sampler2D tex, float2 texcoord, int samples, float startScale = 1.0, float scaleMul = 0.9){
 	float4 c = 0;
 	float scale = startScale;
-	for(int i = 0;
-	i < samples;
-	i++){
+	for(int i = 0; i < samples; i++){
 		float2 uv = ((texcoord - 0.5) * scale) + 0.5;
 		float4 s = tex2D(tex, uv);
 		c += s;
@@ -261,9 +259,7 @@ technique postFX_brightPass_WithLuminance{
 float4 ps_main_blurX(float2 inTex: TEXCOORD0): COLOR0{
 	float2 BlurOffsetX = float2(g_HalfPixel_ViewportSizeInv.z, 0);
 	float4 color = 0;
-	for(int i = 0;
-	i < 8;
-	i++){
+	for(int i = 0; i < 8; i++){
 		color += tex2D(postFX_sampler0, inTex + (BlurOffsetX * i)) * BlurPixelWeight[i];
 		color += tex2D(postFX_sampler0, inTex - (BlurOffsetX * i)) * BlurPixelWeight[i];
 	}
@@ -272,9 +268,7 @@ float4 ps_main_blurX(float2 inTex: TEXCOORD0): COLOR0{
 float4 ps_main_blurY(float2 inTex: TEXCOORD0): COLOR0{
 	float4 color = 0;
 	float2 BlurOffsetY = float2(0, g_HalfPixel_ViewportSizeInv.w);
-	for(int i = 0;
-	i < 8;
-	i++){
+	for(int i = 0; i < 8; i++){
 		color += tex2D(postFX_sampler0, inTex + (BlurOffsetY * i)) * BlurPixelWeight[i];
 		color += tex2D(postFX_sampler0, inTex - (BlurOffsetY * i)) * BlurPixelWeight[i];
 	}
@@ -298,12 +292,8 @@ float4 ps_main_postFX_Average(float2 texCoord: TEXCOORD0): COLOR{
 	};
 	float _max = 0;
 	float _log_sum = 0;
-	for(int x = 0;
-	x < 4;
-	x++){
-		for(int y = 0;
-		y < 4;
-		y++){
+	for(int x = 0; x < 4; x++){
+		for(int y = 0; y < 4; y++){
 			float2 vOffset = float2(Offsets[x], Offsets[y]) * float2(g_HalfPixel_ViewportSizeInv.y, g_HalfPixel_ViewportSizeInv.w);
 			float3 color_here = tex2D(postFX_sampler0, texCoord + vOffset).rgb;
 			float lum_here = dot(color_here * HDRRange, LUMINANCE_WEIGHTS);
@@ -325,12 +315,8 @@ float4 ps_main_postFX_AverageAvgMax(float2 texCoord: TEXCOORD0, uniform const bo
 	};
 	float _max = 0;
 	float _sum = 0;
-	for(int x = 0;
-	x < 4;
-	x++){
-		for(int y = 0;
-		y < 4;
-		y++){
+	for(int x = 0; x < 4; x++){
+		for(int y = 0; y < 4; y++){
 			float2 vOffset = float2(Offsets[x], Offsets[y]) * float2(g_HalfPixel_ViewportSizeInv.y, g_HalfPixel_ViewportSizeInv.w);
 			float2 lumAvgMax_here = tex2D(postFX_sampler0, texCoord + vOffset).rg;
 			_sum += lumAvgMax_here.r * lumAvgMax_here.r;
@@ -412,9 +398,7 @@ float4 ps_main_postFX_DofBlur(uniform const bool using_hdr, uniform const bool u
 	};
 	float sampleDist = g_HalfPixel_ViewportSizeInv.x * 3.14f;
 	float3 sample = sample_start;
-	for(int i = 0;
-	i < SAMPLE_COUNT;
-	i++){
+	for(int i = 0; i < SAMPLE_COUNT; i++){
 		float2 sample_pos = texCoord + sampleDist * offsets[i];
 		float3 sample_here;
 		if(using_depth){
