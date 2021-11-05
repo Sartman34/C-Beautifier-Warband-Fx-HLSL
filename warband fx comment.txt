@@ -1,0 +1,21 @@
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Mount&Blade Warband Shaders
+// You can add edit main shaders and lighting system with this file.
+// You cannot change fx_configuration.h file since it holds application dependent
+// configration parameters. Sorry its not well documented.
+// Please send your feedbacks to our forums.
+//
+// All rights reserved.
+// www.taleworlds.com
+//
+//
+///////////////////////////////////////////////////////////////////////////////////
+// compile_fx.bat:
+// ------------------------------
+// @echo off
+// fxc /D PS_2_X=ps_2_a /T fx_2_0 /Fo mb_2a.fxo mb.fx
+// fxc /D PS_2_X=ps_2_b /T fx_2_0 /Fo mb_2b.fxo mb.fx
+// pause>nul
+///////////////////////////////////////////////////////////////////////////////////
+
